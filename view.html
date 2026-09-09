@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>神社巡り | 御朱印收藏分享</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+
+  :root{
+    --washi:#f0ede3;
+    --washi-deep:#e2dccb;
+    --sumi:#242a2e;
+    --sumi-soft:#454e52;
+    --shu:#2c4a6e;
+    --shu-deep:#1f3650;
+    --gold:#7d8f6a;
+    --line:#c3c4b4;
+    --card:#f7f4ea;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--washi);
+    color:var(--sumi);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    line-height:1.6;
+  }
+  .app{max-width:820px; margin:0 auto; padding:0 20px 80px;}
+  header.hero{padding-top:36px; padding-bottom:20px; border-bottom:1px solid var(--line);}
+  .hero-title{font-family:'Shippori Mincho', serif; font-size:2.2rem; font-weight:700; margin:0 0 6px;}
+  .hero-sub{font-size:0.78rem; letter-spacing:0.12em; color:var(--sumi-soft); text-transform:uppercase;}
+
+  .state-box{padding:60px 20px; text-align:center; color:var(--sumi-soft);}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin:24px 0;}
+  .stat{background:var(--card); padding:16px 14px; display:flex; flex-direction:column; gap:4px;}
+  .stat-label{font-size:0.64rem; letter-spacing:0.1em; color:var(--sumi-soft);}
+  .stat-value{font-family:'Shippori Mincho', serif; font-size:1.5rem; font-weight:700; color:var(--shu-deep);}
+  .stat-value small{font-size:0.8rem; font-weight:500; color:var(--sumi-soft); margin-left:2px;}
+  @media (max-width:600px){ .stats{grid-template-columns:repeat(2,1fr);} }
+
+  section{margin:32px 0;}
+  h2{font-family:'Shippori Mincho', serif; font-size:1.15rem; margin:0 0 14px; display:flex; align-items:baseline; gap:8px;}
+  h2 .count{font-family:'Zen Kaku Gothic New',sans-serif; font-size:0.76rem; font-weight:400; color:var(--sumi-soft);}
+
+  .books-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px;}
+  .book-card{
+    background:linear-gradient(160deg, var(--shu), var(--shu-deep));
+    color:#faf3e4; border-radius:3px; padding:16px 14px;
+    aspect-ratio:0.75; display:flex; flex-direction:column; justify-content:space-between;
+    box-shadow:2px 3px 0 rgba(30,40,50,0.15);
+  }
+  .book-card .name{font-family:'Shippori Mincho', serif; font-weight:600; font-size:0.98rem;}
+  .book-card .tag{font-size:0.66rem; opacity:0.85;}
+  .book-card .loc{font-size:0.62rem; opacity:0.7; margin-top:2px;}
+  .book-card .badges{display:flex; gap:4px; flex-wrap:wrap;}
+  .badge{font-size:0.6rem; padding:2px 6px; border-radius:8px; background:rgba(255,255,255,0.2);}
+
+  .record-row{
+    display:flex; flex-direction:column; gap:4px;
+    padding:12px 0; border-bottom:1px solid var(--line);
+  }
+  .record-row .name{font-family:'Shippori Mincho', serif; font-weight:600; font-size:0.94rem;}
+  .record-row .meta{font-size:0.76rem; color:var(--sumi-soft); display:flex; flex-wrap:wrap; gap:0 10px;}
+  .record-row .meta span:not(:last-child)::after{content:'・'; margin-left:10px; color:var(--line);}
+  .record-row .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:2px;}
+  .tag-pill{
+    font-size:0.64rem; padding:2px 8px; border-radius:10px;
+    background:rgba(44,74,110,0.08); color:var(--shu-deep);
+    border:1px solid rgba(44,74,110,0.18);
+  }
+  .proxy-tag{
+    display:inline-block; padding:1px 7px; font-size:0.6rem;
+    color:var(--sumi-soft); border:1px solid var(--line); border-radius:10px;
+  }
+
+  #mapWrap{background:var(--card); border:1px solid var(--line); border-radius:3px; padding:14px; display:flex; justify-content:center;}
+  #mapWrap svg{width:100%; max-width:260px; height:auto;}
+  .tile-label{font-family:'Zen Kaku Gothic New', sans-serif; font-size:7.5px; font-weight:500; text-anchor:middle; dominant-baseline:central;}
+
+  footer{text-align:center; font-size:0.7rem; color:var(--sumi-soft); opacity:0.7; margin-top:50px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="hero">
+    <div class="hero-sub">GOSHUIN COLLECTION</div>
+    <h1 class="hero-title" id="pageTitle">神社巡り</h1>
+  </header>
+
+  <div id="stateBox" class="state-box">正在載入收藏內容…</div>
+  <div id="content" style="display:none;">
+    <div class="stats" id="statsRow"></div>
+
+    <section>
+      <h2>巡禮地圖 <span class="count" id="mapCount"></span></h2>
+      <div id="mapWrap"></div>
+    </section>
+
+    <section>
+      <h2>朱印帳 <span class="count" id="booksCount"></span></h2>
+      <div class="books-grid" id="booksGrid"></div>
+    </section>
+
+    <section>
+      <h2>御朱印 <span class="count" id="recordsCount"></span></h2>
+      <div id="recordsList"></div>
+    </section>
+  </div>
+
+  <footer>由「神社巡り」App 產生的公開分享頁面・唯讀</footer>
+</div>
+
+<script>
+  // ====== 1) 貼上跟主 App 一樣的 Firebase 設定 ======
+  // 把 index.html 裡「發布分享網站」用的同一組 firebaseConfig 貼在這裡
+  const firebaseConfig = {
+    apiKey: "AIzaSyDT0sFAte3VLV4c94Oe2kgrjk4khoQ3l2o",
+    authDomain: "lekuansgoshuin.firebaseapp.com",
+    projectId: "lekuansgoshuin",
+    storageBucket: "lekuansgoshuin.firebasestorage.app",
+    messagingSenderId: "566746261643",
+    appId: "1:566746261643:web:621afb4a91ca7f0232cc8e"
+  };
+  // ===================================================
+
+  const TILE_GRID = [
+    {code:'01',name:'北海道',label:'北海',col:13,row:0},
+    {code:'02',name:'青森県',label:'青森',col:12,row:2},
+    {code:'03',name:'岩手県',label:'岩手',col:13,row:4},
+    {code:'04',name:'宮城県',label:'宮城',col:13,row:7},
+    {code:'05',name:'秋田県',label:'秋田',col:12,row:4},
+    {code:'06',name:'山形県',label:'山形',col:12,row:7},
+    {code:'07',name:'福島県',label:'福島',col:12,row:8},
+    {code:'08',name:'茨城県',label:'茨城',col:17,row:6},
+    {code:'09',name:'栃木県',label:'栃木',col:16,row:6},
+    {code:'10',name:'群馬県',label:'群馬',col:15,row:6},
+    {code:'11',name:'埼玉県',label:'埼玉',col:15,row:7},
+    {code:'12',name:'千葉県',label:'千葉',col:16,row:8},
+    {code:'13',name:'東京都',label:'東京',col:15,row:8},
+    {code:'14',name:'神奈川県',label:'神奈',col:14,row:8},
+    {code:'15',name:'新潟県',label:'新潟',col:11,row:5},
+    {code:'16',name:'富山県',label:'富山',col:10,row:7},
+    {code:'17',name:'石川県',label:'石川',col:9,row:8},
+    {code:'18',name:'福井県',label:'福井',col:9,row:9},
+    {code:'19',name:'山梨県',label:'山梨',col:11,row:9},
+    {code:'20',name:'長野県',label:'長野',col:9,row:7},
+    {code:'21',name:'岐阜県',label:'岐阜',col:9,row:10},
+    {code:'22',name:'静岡県',label:'静岡',col:10,row:11},
+    {code:'23',name:'愛知県',label:'愛知',col:8,row:10},
+    {code:'24',name:'三重県',label:'三重',col:9,row:12},
+    {code:'25',name:'滋賀県',label:'滋賀',col:7,row:11},
+    {code:'26',name:'京都府',label:'京都',col:8,row:11},
+    {code:'27',name:'大阪府',label:'大阪',col:7,row:12},
+    {code:'28',name:'兵庫県',label:'兵庫',col:8,row:12},
+    {code:'29',name:'奈良県',label:'奈良',col:8,row:13},
+    {code:'30',name:'和歌山県',label:'和歌',col:7,row:13},
+    {code:'31',name:'鳥取県',label:'鳥取',col:5,row:10},
+    {code:'32',name:'島根県',label:'島根',col:4,row:10},
+    {code:'33',name:'岡山県',label:'岡山',col:5,row:12},
+    {code:'34',name:'広島県',label:'広島',col:4,row:12},
+    {code:'35',name:'山口県',label:'山口',col:3,row:13},
+    {code:'36',name:'徳島県',label:'徳島',col:7,row:15},
+    {code:'37',name:'香川県',label:'香川',col:7,row:14},
+    {code:'38',name:'愛媛県',label:'愛媛',col:6,row:15},
+    {code:'39',name:'高知県',label:'高知',col:6,row:16},
+    {code:'40',name:'福岡県',label:'福岡',col:0,row:13},
+    {code:'41',name:'佐賀県',label:'佐賀',col:0,row:14},
+    {code:'42',name:'長崎県',label:'長崎',col:0,row:15},
+    {code:'43',name:'熊本県',label:'熊本',col:1,row:15},
+    {code:'44',name:'大分県',label:'大分',col:1,row:14},
+    {code:'45',name:'宮崎県',label:'宮崎',col:1,row:16},
+    {code:'46',name:'鹿児島県',label:'鹿児',col:0,row:17},
+    {code:'47',name:'沖縄県',label:'沖縄',col:0,row:18}
+  ];
+
+  function escapeHtml(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function reiwaLabel(isoDate){
+    if(!isoDate) return '';
+    const parts = isoDate.split('-').map(Number);
+    if(parts.length<3) return isoDate;
+    const [y,m,d] = parts;
+    const r = y - 2018;
+    return `令和${r}年${m}月${d}日`;
+  }
+
+  function renderMap(visitedCodes){
+    const CELL = 22, GAP = 3;
+    const maxCol = Math.max(...TILE_GRID.map(g=>g.col));
+    const maxRow = Math.max(...TILE_GRID.map(g=>g.row));
+    const W = (maxCol+1)*CELL + 8, H = (maxRow+1)*CELL + 8;
+    const visitedSet = new Set(visitedCodes||[]);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+    TILE_GRID.forEach(g=>{
+      const x = g.col*CELL+4, y = g.row*CELL+4, size = CELL-GAP;
+      const visited = visitedSet.has(g.code);
+      const fill = visited ? '#2c4a6e' : '#c9c4ae';
+      const opacity = visited ? '1' : '0.5';
+      const textColor = visited ? '#faf3e4' : '#2b2622';
+      svg += `<g><rect x="${x}" y="${y}" width="${size}" height="${size}" rx="4" fill="${fill}" fill-opacity="${opacity}"/>`;
+      svg += `<text x="${x+size/2}" y="${y+size/2}" class="tile-label" fill="${textColor}">${g.label}</text></g>`;
+    });
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function render(data){
+    $('stateBox').style.display = 'none';
+    $('content').style.display = 'block';
+
+    const s = data.stats || {};
+    $('statsRow').innerHTML = `
+      <div class="stat"><div class="stat-label">御朱印總數</div><div class="stat-value">${s.total||0}<small>枚</small></div></div>
+      <div class="stat"><div class="stat-label">朱印帳數量</div><div class="stat-value">${s.bookCount||0}<small>本</small></div></div>
+      <div class="stat"><div class="stat-label">參拜神社/寺廟</div><div class="stat-value">${s.shrineCount||0}<small>間</small></div></div>
+      <div class="stat"><div class="stat-label">已巡禮都道府県</div><div class="stat-value">${s.visitedCount||0}<small>/ 47</small></div></div>
+    `;
+
+    $('mapWrap').innerHTML = renderMap(data.visitedPrefCodes);
+    $('mapCount').textContent = `已巡禮 ${s.visitedCount||0} / 47`;
+
+    const books = data.books || [];
+    $('booksCount').textContent = `（共 ${books.length} 本）`;
+    $('booksGrid').innerHTML = books.map(b => `
+      <div class="book-card">
+        <div>
+          <div class="name">${escapeHtml(b.name)}</div>
+          <div class="tag">${escapeHtml(b.tag||'')}</div>
+          ${b.location ? `<div class="loc">${escapeHtml(b.location)}</div>` : ''}
+        </div>
+        <div class="badges">
+          ${b.mangan ? `<span class="badge">満願</span>` : ''}
+          ${b.proxyPurchased ? `<span class="badge">代購</span>` : ''}
+        </div>
+      </div>
+    `).join('') || '<p style="color:var(--sumi-soft);">尚無資料</p>';
+
+    const records = (data.records || []).slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+    $('recordsCount').textContent = `（共 ${records.length} 筆）`;
+    $('recordsList').innerHTML = records.map(r => `
+      <div class="record-row">
+        <div class="name">${escapeHtml(r.name||'（未命名）')}${r.proxyWritten ? `<span class="proxy-tag" style="margin-left:8px;">代寫</span>` : ''}</div>
+        <div class="meta">
+          <span>${reiwaLabel(r.date)}</span>
+          ${r.location ? `<span>${escapeHtml(r.location)}</span>` : ''}
+          ${r.bookName ? `<span>${escapeHtml(r.bookName)}</span>` : ''}
+        </div>
+        ${(r.tags&&r.tags.length) ? `<div class="tags">${r.tags.map(t=>`<span class="tag-pill">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+      </div>
+    `).join('') || '<p style="color:var(--sumi-soft);">尚無資料</p>';
+  }
+
+  function $(id){ return document.getElementById(id); }
+
+  function loadScript(src){
+    return new Promise((resolve,reject)=>{
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = ()=> reject(new Error('load failed: ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function main(){
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if(!id){
+      $('stateBox').textContent = '這個連結缺少分享 ID，請確認網址是否完整。';
+      return;
+    }
+    if(!firebaseConfig.projectId || firebaseConfig.projectId.indexOf('PASTE_') === 0){
+      $('stateBox').textContent = '這個分享頁面還沒有設定 Firebase，請聯絡連結提供者完成設定。';
+      return;
+    }
+    try{
+      await loadScript('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
+      await loadScript('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js');
+      const app = firebase.initializeApp(firebaseConfig);
+      const db = app.firestore();
+      const doc = await db.collection('goshuinShares').doc(id).get();
+      if(!doc.exists){
+        $('stateBox').textContent = '找不到這個分享內容，連結可能已失效。';
+        return;
+      }
+      render(doc.data());
+    }catch(e){
+      console.error(e);
+      $('stateBox').textContent = '載入失敗，請確認網路連線後重新整理頁面。';
+    }
+  }
+
+  main();
+</script>
+</body>
+</html>
