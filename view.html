@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>神社巡り | 御朱印收藏分享</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&family=Zen+Old+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+
+  :root{
+    --washi:#f0ede3;
+    --washi-deep:#e2dccb;
+    --sumi:#242a2e;
+    --sumi-soft:#454e52;
+    --shu:#2c4a6e;
+    --shu-deep:#1f3650;
+    --shu-glow:#3d6690;
+    --gold:#7d8f6a;
+    --line:#c3c4b4;
+    --paper-shadow: rgba(30,40,50,0.18);
+    --card:#f7f4ea;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--washi);
+    color:var(--sumi);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    line-height:1.6;
+  }
+  .app{max-width:960px; margin:0 auto; padding:0 20px 90px;}
+
+  header.hero{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:40px 4px 30px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:30px;
+    gap:24px;
+  }
+  .hero-title-block{display:flex; align-items:flex-end; gap:20px;}
+  .kanji-vert{
+    writing-mode: vertical-rl;
+    font-family:'Shippori Mincho', serif;
+    font-weight:800;
+    font-size:1.9rem;
+    letter-spacing:0.28em;
+    color:var(--sumi);
+    line-height:1.15;
+  }
+  .hero-en{
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-size:0.64rem;
+    letter-spacing:0.3em;
+    color:var(--sumi-soft);
+    text-transform:uppercase;
+    margin-top:4px;
+  }
+  .hero-sub{
+    font-size:0.86rem;
+    color:var(--sumi-soft);
+    line-height:1.8;
+    max-width:240px;
+    border-left:1px solid var(--line);
+    padding-left:16px;
+  }
+  .hero-scene{flex-shrink:0; width:150px; max-width:32vw;}
+  .hero-scene svg{width:100%; height:auto; display:block;}
+
+  @media (max-width:600px){
+    header.hero{padding-top:24px;}
+    .kanji-vert{font-size:1.5rem;}
+    .hero-scene{width:110px;}
+  }
+
+  .state-box{padding:60px 20px; text-align:center; color:var(--sumi-soft);}
+
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin-bottom:30px;}
+  .stat{background:var(--card); padding:16px 14px; display:flex; flex-direction:column; gap:6px;}
+  .stat-label{font-size:0.62rem; letter-spacing:0.1em; color:var(--sumi-soft);}
+  .stat-value{font-family:'Shippori Mincho', serif; font-size:1.6rem; font-weight:700; color:var(--shu-deep);}
+  .stat-value small{font-size:0.78rem; font-weight:500; color:var(--sumi-soft); margin-left:2px;}
+  .stat-split{display:flex; align-items:center; gap:12px;}
+  .stat-split-item{display:flex; flex-direction:column;}
+  .stat-split-value{font-family:'Shippori Mincho', serif; font-size:1.3rem; font-weight:700; color:var(--shu-deep); line-height:1.2;}
+  .stat-split-label{font-size:0.62rem; color:var(--sumi-soft);}
+  .stat-split-divider{width:1px; align-self:stretch; background:var(--line); opacity:0.7;}
+  @media (max-width:600px){ .stats{grid-template-columns:repeat(2,1fr);} }
+
+  .tab-nav{display:flex; gap:2px; margin-bottom:26px; border-bottom:1px solid var(--line);}
+  .tab-btn{
+    font-family:'Zen Old Mincho', serif; font-size:0.92rem; font-weight:600; letter-spacing:0.08em;
+    background:none; border:none; padding:10px 6px 13px; margin-right:26px;
+    color:var(--sumi-soft); cursor:pointer; position:relative;
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .tab-btn .tab-count{font-family:'Zen Kaku Gothic New', sans-serif; font-size:0.68rem; font-weight:400; color:var(--sumi-soft);}
+  .tab-btn::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:transparent; transition:background 0.16s ease;}
+  .tab-btn.active{color:var(--shu-deep);}
+  .tab-btn.active::after{background:var(--shu);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px;}
+  .section-head h2{
+    font-family:'Zen Old Mincho', serif; font-size:1rem; font-weight:600; letter-spacing:0.06em; margin:0;
+    display:flex; align-items:center; gap:9px;
+  }
+  .section-head h2::before{content:''; display:inline-block; width:5px; height:5px; background:var(--shu); border-radius:50%;}
+  .section-head .count{font-family:'Zen Kaku Gothic New',sans-serif; font-weight:400; font-size:0.76rem; color:var(--sumi-soft);}
+
+  .toolbar{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:18px;}
+  .toolbar input[type="text"], .toolbar select{
+    font-family:'Zen Kaku Gothic New', sans-serif; background:var(--card); border:1px solid var(--line);
+    padding:8px 12px; font-size:0.82rem; color:var(--sumi); border-radius:2px;
+  }
+  .toolbar input[type="text"]{flex:1; min-width:160px;}
+
+  .books-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:16px; justify-items:center;}
+  .book-card{
+    width:100%; aspect-ratio:0.68; max-width:210px;
+    border-radius:3px; padding:16px 14px; position:relative;
+    display:flex; flex-direction:column; justify-content:space-between;
+    box-shadow:3px 4px 0 var(--paper-shadow);
+    border:1px solid rgba(0,0,0,0.06);
+    background-size:cover; background-position:center;
+    cursor: default;
+  }
+  .book-card.has-photo{cursor:pointer;}
+  .book-card.has-photo::before{
+    content:''; position:absolute; inset:0; border-radius:3px;
+    background:linear-gradient(180deg, rgba(20,14,8,0.15) 0%, rgba(20,14,8,0.55) 100%);
+  }
+  .book-card > *{position:relative; z-index:1;}
+  .mangan-badge{
+    position:absolute; top:10px; right:10px; width:34px; height:34px; border-radius:50%;
+    background:rgba(44,74,110,0.92); color:#faf3e4;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Shippori Mincho', serif; font-weight:700; font-size:0.58rem; letter-spacing:0.04em;
+    box-shadow:1px 2px 4px rgba(0,0,0,0.3); border:1.5px solid rgba(250,243,228,0.75);
+    transform:rotate(-8deg); z-index:2;
+  }
+  .book-card .book-title{
+    font-family:'Shippori Mincho', serif; font-weight:700; font-size:1rem; line-height:1.5;
+    writing-mode:vertical-rl; flex:1; min-height:0; color:#faf3e4; text-shadow:0 1px 2px rgba(0,0,0,0.4);
+  }
+  .book-card .book-meta{display:flex; justify-content:space-between; align-items:flex-end; color:#faf3e4;}
+  .book-card .book-meta-col{display:flex; flex-direction:column; gap:2px;}
+  .book-card .book-meta-col.right{align-items:flex-end;}
+  .book-card .book-count{font-size:1.35rem; font-family:'Shippori Mincho', serif; font-weight:700;}
+  .book-card .book-count small{font-size:0.65rem; font-weight:400; opacity:0.85;}
+  .book-card .book-tag{font-size:0.62rem; letter-spacing:0.06em; opacity:0.85;}
+  .book-card .book-location{font-size:0.58rem; opacity:0.75;}
+
+  .list-row{
+    background:var(--card); display:flex; align-items:center; gap:14px;
+    padding:12px 14px; border-bottom:1px solid var(--washi-deep);
+    cursor:default;
+  }
+  .list-row.has-photo{cursor:pointer;}
+  .list-row:hover.has-photo{background:#fff8ea;}
+  .list-thumb{
+    width:58px; height:74px; flex-shrink:0; background:linear-gradient(135deg,#efe4cc,#e3d3ac);
+    border-radius:2px; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  }
+  .list-thumb.landscape{width:96px; height:64px;}
+  .list-thumb img{width:100%; height:100%; object-fit:cover;}
+  .list-thumb .mini-mark{color:var(--shu-deep); opacity:0.3; font-size:1.4rem; font-family:'Shippori Mincho',serif;}
+  .list-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:5px;}
+  .list-name{font-family:'Shippori Mincho', serif; font-weight:600; font-size:0.94rem;}
+  .proxy-tag{
+    display:inline-block; margin-left:8px; padding:1px 7px; font-size:0.6rem; font-weight:500;
+    color:var(--sumi-soft); border:1px solid var(--line); border-radius:10px; vertical-align:middle;
+  }
+  .list-meta{display:flex; flex-wrap:wrap; align-items:center; gap:0 10px; font-size:0.74rem; color:var(--sumi-soft);}
+  .list-meta span:not(:last-child)::after{content:'・'; margin-left:10px; color:var(--line);}
+  .list-tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;}
+  .tag-pill{
+    font-size:0.62rem; padding:2px 8px; border-radius:10px;
+    background:rgba(44,74,110,0.08); color:var(--shu-deep); border:1px solid rgba(44,74,110,0.18);
+  }
+
+  .map-progress{
+    font-family:'Zen Kaku Gothic New', sans-serif; font-size:0.78rem; color:var(--sumi-soft);
+    background:var(--card); border:1px solid var(--line); padding:6px 14px; border-radius:14px;
+  }
+  .map-progress strong{color:var(--shu-deep); font-weight:700;}
+  .map-wrap{display:grid; grid-template-columns:minmax(260px,420px) 1fr; gap:24px; align-items:flex-start;}
+  @media (max-width:760px){ .map-wrap{grid-template-columns:1fr;} }
+  .map-svg-col{background:var(--card); border:1px solid var(--line); border-radius:3px; padding:14px 14px 10px;}
+  #japanMap{width:100%; height:auto; display:block;}
+  .pref-tile{cursor:pointer;}
+  .tile-base{stroke:var(--washi); stroke-width:2; transition:fill 0.15s ease, fill-opacity 0.15s ease;}
+  .pref-tile:hover .tile-base{filter:brightness(1.08);}
+  .pref-tile.selected .tile-base{stroke:var(--sumi); stroke-width:2.5;}
+  .tile-label{font-family:'Zen Kaku Gothic New', sans-serif; font-size:7.5px; font-weight:500; text-anchor:middle; dominant-baseline:central; pointer-events:none;}
+
+  .map-side{background:var(--card); border:1px solid var(--line); border-radius:3px; padding:20px 22px; min-height:180px;}
+  .map-side-empty{color:var(--sumi-soft); font-size:0.85rem; line-height:1.9; text-align:center; padding:36px 10px;}
+  .map-side-title{font-family:'Shippori Mincho', serif; font-weight:700; font-size:1.15rem; margin-bottom:4px;}
+  .map-side-count{font-size:0.76rem; color:var(--sumi-soft); margin-bottom:16px;}
+  .map-side-list{display:flex; flex-direction:column; gap:9px;}
+  .msi-item{
+    display:flex; align-items:center; gap:12px; padding:9px 11px;
+    background:var(--washi); border:1px solid var(--line); border-radius:2px;
+  }
+  .msi-item.has-photo{cursor:pointer;}
+  .msi-item .msi-name{font-family:'Shippori Mincho', serif; font-size:0.88rem; font-weight:600;}
+  .msi-item .msi-date{font-size:0.7rem; color:var(--sumi-soft);}
+  .msi-thumb{
+    width:38px; height:50px; flex-shrink:0; border-radius:2px; overflow:hidden;
+    background:linear-gradient(135deg,#efe4cc,#e3d3ac); display:flex; align-items:center; justify-content:center;
+  }
+  .msi-thumb img{width:100%; height:100%; object-fit:cover;}
+  .msi-thumb-mark{color:var(--shu-deep); opacity:0.35; font-size:0.95rem; font-family:'Shippori Mincho',serif;}
+
+  .empty-note{color:var(--sumi-soft); font-size:0.85rem; padding:20px 4px;}
+
+  footer{text-align:center; font-size:0.7rem; color:var(--sumi-soft); opacity:0.7; margin-top:50px;}
+
+  .lightbox{
+    display:none; position:fixed; inset:0; z-index:100; background:rgba(15,15,15,0.92);
+    align-items:center; justify-content:center; padding:24px; cursor:zoom-out;
+  }
+  .lightbox.show{display:flex;}
+  .lightbox img{max-width:100%; max-height:100%; object-fit:contain; box-shadow:0 4px 30px rgba(0,0,0,0.5); border-radius:2px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="hero">
+    <div class="hero-title-block">
+      <span class="kanji-vert">神社巡り</span>
+      <div>
+        <div class="hero-en">Goshuin Collection Log</div>
+        <div class="hero-sub">記錄每一次參拜、每一枚墨跡與朱印，留下走過的社寺足跡。</div>
+      </div>
+    </div>
+    <div class="hero-scene" aria-hidden="true">
+      <svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,108 Q30,100 60,108 T120,108 T180,108 T260,108" fill="none" stroke="var(--line)" stroke-width="1.5" opacity="0.5"/>
+        <path d="M70,110 L133,26 L196,110 Z" fill="var(--shu)" stroke="var(--shu-deep)" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M133,26 L152,51 L146,48 L138,58 L128,50 L120,62 L111,55 Z" fill="var(--washi)" stroke="var(--shu-deep)" stroke-width="1.3" stroke-linejoin="round"/>
+        <line x1="0" y1="110" x2="260" y2="110" stroke="var(--line)" stroke-width="1.2"/>
+        <g stroke="var(--shu)" stroke-width="4" stroke-linecap="round" fill="none">
+          <line x1="196" y1="66" x2="192" y2="112"/>
+          <line x1="234" y1="66" x2="238" y2="112"/>
+          <line x1="186" y1="66" x2="244" y2="66"/>
+          <line x1="182" y1="76" x2="248" y2="76"/>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <div id="stateBox" class="state-box">正在載入收藏內容…</div>
+
+  <div id="content" style="display:none;">
+    <div class="stats" id="statsRow"></div>
+
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="booksTab">朱印帳 <span class="tab-count" id="tabBookCount"></span></button>
+      <button class="tab-btn" data-tab="recordsTab">御朱印 <span class="tab-count" id="tabRecordCount"></span></button>
+      <button class="tab-btn" data-tab="mapTab">巡禮地圖</button>
+    </div>
+
+    <div class="tab-panel active" id="booksTab">
+      <div class="section-head"><h2>朱印帳</h2></div>
+      <div class="books-grid" id="booksGrid"></div>
+    </div>
+
+    <div class="tab-panel" id="recordsTab">
+      <div class="section-head"><h2>御朱印 <span class="count" id="recordsCount"></span></h2></div>
+      <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="搜尋寺社名稱、地點…">
+        <select id="bookFilter"><option value="all">所有朱印帳</option></select>
+      </div>
+      <div id="recordsList"></div>
+    </div>
+
+    <div class="tab-panel" id="mapTab">
+      <div class="section-head">
+        <h2>巡禮地圖</h2>
+        <span class="map-progress" id="mapProgress"></span>
+      </div>
+      <div class="map-wrap">
+        <div class="map-svg-col"><div id="japanMap"></div></div>
+        <div class="map-side" id="mapSide"><div class="map-side-empty">點選地圖上的色塊，查看該地的參拜記錄。</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>由「神社巡り」App 產生的公開分享頁面・唯讀</footer>
+</div>
+
+<div id="lightbox" class="lightbox"><img id="lightboxImg" src="" alt=""></div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDT0sFAte3VLV4c94Oe2kgrjk4khoQ3l2o",
+    authDomain: "lekuansgoshuin.firebaseapp.com",
+    projectId: "lekuansgoshuin",
+    storageBucket: "lekuansgoshuin.firebasestorage.app",
+    messagingSenderId: "566746261643",
+    appId: "1:566746261643:web:621afb4a91ca7f0232cc8e"
+  };
+
+  const TILE_GRID = [
+    {code:'01',name:'北海道',label:'北海',col:13,row:0},
+    {code:'02',name:'青森県',label:'青森',col:12,row:2},
+    {code:'03',name:'岩手県',label:'岩手',col:13,row:4},
+    {code:'04',name:'宮城県',label:'宮城',col:13,row:7},
+    {code:'05',name:'秋田県',label:'秋田',col:12,row:4},
+    {code:'06',name:'山形県',label:'山形',col:12,row:7},
+    {code:'07',name:'福島県',label:'福島',col:12,row:8},
+    {code:'08',name:'茨城県',label:'茨城',col:17,row:6},
+    {code:'09',name:'栃木県',label:'栃木',col:16,row:6},
+    {code:'10',name:'群馬県',label:'群馬',col:15,row:6},
+    {code:'11',name:'埼玉県',label:'埼玉',col:15,row:7},
+    {code:'12',name:'千葉県',label:'千葉',col:16,row:8},
+    {code:'13',name:'東京都',label:'東京',col:15,row:8},
+    {code:'14',name:'神奈川県',label:'神奈',col:14,row:8},
+    {code:'15',name:'新潟県',label:'新潟',col:11,row:5},
+    {code:'16',name:'富山県',label:'富山',col:10,row:7},
+    {code:'17',name:'石川県',label:'石川',col:9,row:8},
+    {code:'18',name:'福井県',label:'福井',col:9,row:9},
+    {code:'19',name:'山梨県',label:'山梨',col:11,row:9},
+    {code:'20',name:'長野県',label:'長野',col:9,row:7},
+    {code:'21',name:'岐阜県',label:'岐阜',col:9,row:10},
+    {code:'22',name:'静岡県',label:'静岡',col:10,row:11},
+    {code:'23',name:'愛知県',label:'愛知',col:8,row:10},
+    {code:'24',name:'三重県',label:'三重',col:9,row:12},
+    {code:'25',name:'滋賀県',label:'滋賀',col:7,row:11},
+    {code:'26',name:'京都府',label:'京都',col:8,row:11},
+    {code:'27',name:'大阪府',label:'大阪',col:7,row:12},
+    {code:'28',name:'兵庫県',label:'兵庫',col:8,row:12},
+    {code:'29',name:'奈良県',label:'奈良',col:8,row:13},
+    {code:'30',name:'和歌山県',label:'和歌',col:7,row:13},
+    {code:'31',name:'鳥取県',label:'鳥取',col:5,row:10},
+    {code:'32',name:'島根県',label:'島根',col:4,row:10},
+    {code:'33',name:'岡山県',label:'岡山',col:5,row:12},
+    {code:'34',name:'広島県',label:'広島',col:4,row:12},
+    {code:'35',name:'山口県',label:'山口',col:3,row:13},
+    {code:'36',name:'徳島県',label:'徳島',col:7,row:15},
+    {code:'37',name:'香川県',label:'香川',col:7,row:14},
+    {code:'38',name:'愛媛県',label:'愛媛',col:6,row:15},
+    {code:'39',name:'高知県',label:'高知',col:6,row:16},
+    {code:'40',name:'福岡県',label:'福岡',col:0,row:13},
+    {code:'41',name:'佐賀県',label:'佐賀',col:0,row:14},
+    {code:'42',name:'長崎県',label:'長崎',col:0,row:15},
+    {code:'43',name:'熊本県',label:'熊本',col:1,row:15},
+    {code:'44',name:'大分県',label:'大分',col:1,row:14},
+    {code:'45',name:'宮崎県',label:'宮崎',col:1,row:16},
+    {code:'46',name:'鹿児島県',label:'鹿児',col:0,row:17},
+    {code:'47',name:'沖縄県',label:'沖縄',col:0,row:18}
+  ];
+  const PREFECTURE_NAMES = TILE_GRID.map(g=>g.name);
+
+  function $(id){ return document.getElementById(id); }
+  function escapeHtml(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function reiwaLabel(isoDate){
+    if(!isoDate) return '';
+    const parts = isoDate.split('-').map(Number);
+    if(parts.length<3) return isoDate;
+    const y = parts[0], m = parts[1], d = parts[2];
+    return '令和' + (y-2018) + '年' + m + '月' + d + '日';
+  }
+  function matchPrefectureName(location){
+    if(!location) return null;
+    return PREFECTURE_NAMES.find(function(n){ return location.includes(n) || location.includes(n.slice(0,-1)); }) || null;
+  }
+  function shade(hex, percent){
+    const num = parseInt(hex.replace('#',''),16);
+    let r = (num>>16) + Math.round(255*percent/100);
+    let g = ((num>>8)&0xff) + Math.round(255*percent/100);
+    let b = (num&0xff) + Math.round(255*percent/100);
+    r = Math.max(0,Math.min(255,r)); g = Math.max(0,Math.min(255,g)); b = Math.max(0,Math.min(255,b));
+    return '#' + (r<<16|g<<8|b).toString(16).padStart(6,'0');
+  }
+
+  let DATA = null;
+  let PHOTO_MAP = {};
+  let selectedPrefCode = null;
+
+  function openLightbox(src){ $('lightboxImg').src = src; $('lightbox').classList.add('show'); }
+  function closeLightbox(){ $('lightbox').classList.remove('show'); $('lightboxImg').src=''; }
+  $('lightbox').addEventListener('click', closeLightbox);
+  document.addEventListener('click', function(e){
+    const t = e.target.closest('[data-photo]');
+    if(t && t.dataset.photo){ openLightbox(t.dataset.photo); }
+  });
+
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      $(btn.dataset.tab).classList.add('active');
+      if(btn.dataset.tab === 'mapTab') renderMap();
+    });
+  });
+
+  function renderStats(){
+    const s = DATA.stats || {};
+    $('statsRow').innerHTML =
+      '<div class="stat">' +
+        '<div class="stat-label">御朱印總數（共 ' + (s.total||0) + ' 枚）</div>' +
+        '<div class="stat-split">' +
+          '<div class="stat-split-item"><span class="stat-split-value">' + (s.selfWritten||0) + '</span><span class="stat-split-label">親寫</span></div>' +
+          '<div class="stat-split-divider"></div>' +
+          '<div class="stat-split-item"><span class="stat-split-value">' + (s.proxyWritten||0) + '</span><span class="stat-split-label">代寫</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="stat">' +
+        '<div class="stat-label">朱印帳數量（共 ' + (s.bookCount||0) + ' 本）</div>' +
+        '<div class="stat-split">' +
+          '<div class="stat-split-item"><span class="stat-split-value">' + (s.selfBookCount||0) + '</span><span class="stat-split-label">親領</span></div>' +
+          '<div class="stat-split-divider"></div>' +
+          '<div class="stat-split-item"><span class="stat-split-value">' + (s.proxyBookCount||0) + '</span><span class="stat-split-label">代購</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="stat"><div class="stat-label">參拜神社/寺廟數</div><div class="stat-value">' + (s.shrineCount||0) + '<small>間</small></div></div>' +
+      '<div class="stat"><div class="stat-label">已巡禮都道府県</div><div class="stat-value">' + (s.visitedCount||0) + '<small>/ 47</small></div></div>';
+    $('tabBookCount').textContent = DATA.books ? DATA.books.length : '';
+    $('tabRecordCount').textContent = DATA.records ? DATA.records.length : '';
+  }
+
+  function renderBooks(){
+    const books = (DATA.books || []).slice().sort(function(a,b){
+      const ca = (DATA.records||[]).filter(function(r){ return r.bookName===a.name; }).length;
+      const cb = (DATA.records||[]).filter(function(r){ return r.bookName===b.name; }).length;
+      return cb - ca;
+    });
+    $('booksGrid').innerHTML = books.map(function(b){
+      const photo = b.id ? PHOTO_MAP['book_'+b.id] : null;
+      const count = (DATA.records||[]).filter(function(r){ return r.bookName===b.name; }).length;
+      const bgStyle = photo
+        ? ' style="background-image:url(' + photo + ');background-size:cover;background-position:center;"'
+        : ' style="background:linear-gradient(160deg, ' + (b.color||'#2c4a6e') + ', ' + shade(b.color||'#2c4a6e', -18) + ');"';
+      const photoAttr = photo ? ' data-photo="' + photo + '"' : '';
+      return '' +
+      '<div class="book-card' + (photo?' has-photo':'') + '"' + bgStyle + photoAttr + '>' +
+        (b.mangan ? '<div class="mangan-badge">満願</div>' : '') +
+        '<div class="book-title">' + escapeHtml(b.name) + '</div>' +
+        '<div class="book-meta">' +
+          '<div class="book-meta-col">' +
+            '<span class="book-tag">' + escapeHtml(b.tag||'') + (b.proxyPurchased ? '（代購）' : '') + '</span>' +
+            (b.location ? '<span class="book-location">' + escapeHtml(b.location) + '</span>' : '') +
+          '</div>' +
+          '<div class="book-meta-col right">' +
+            '<span class="book-count">' + count + '<small>枚</small></span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('') || '<p class="empty-note">尚無朱印帳資料</p>';
+  }
+
+  function getFilteredRecords(){
+    const q = ($('searchInput').value||'').trim().toLowerCase();
+    const bookFilter = $('bookFilter').value;
+    return (DATA.records||[]).filter(function(r){
+      if(bookFilter!=='all' && r.bookName!==bookFilter) return false;
+      if(q && !(String(r.name||'').toLowerCase().includes(q) || String(r.location||'').toLowerCase().includes(q))) return false;
+      return true;
+    }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+  }
+  function renderRecords(){
+    const list = getFilteredRecords();
+    $('recordsCount').textContent = '（共 ' + list.length + ' 筆）';
+    $('recordsList').innerHTML = list.map(function(r){
+      const photo = r.id ? PHOTO_MAP['rec_'+r.id] : null;
+      return '' +
+      '<div class="list-row' + (photo?' has-photo':'') + '"' + (photo?(' data-photo="'+photo+'"'):'') + '>' +
+        '<div class="list-thumb' + (r.photoLandscape?' landscape':'') + '">' + (photo ? '<img src="'+photo+'" alt="" loading="lazy">' : '<span class="mini-mark">朱</span>') + '</div>' +
+        '<div class="list-info">' +
+          '<div class="list-name">' + escapeHtml(r.name||'（未命名）') + (r.proxyWritten ? '<span class="proxy-tag">代寫</span>' : '') + '</div>' +
+          '<div class="list-meta">' +
+            '<span>' + reiwaLabel(r.date) + '</span>' +
+            (r.location ? '<span>' + escapeHtml(r.location) + '</span>' : '') +
+            (r.bookName ? '<span>' + escapeHtml(r.bookName) + '</span>' : '') +
+          '</div>' +
+          ((r.tags&&r.tags.length) ? '<div class="list-tags">' + r.tags.map(function(t){ return '<span class="tag-pill">'+escapeHtml(t)+'</span>'; }).join('') + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('') || '<p class="empty-note">沒有符合條件的御朱印記錄</p>';
+  }
+  $('searchInput').addEventListener('input', renderRecords);
+  $('bookFilter').addEventListener('change', renderRecords);
+
+  let mapRendered = false;
+  function renderMap(){
+    const visited = new Set(DATA.visitedPrefCodes || []);
+    $('mapProgress').innerHTML = '已巡禮 <strong>' + visited.size + '</strong> / 47 都道府県';
+
+    if(!mapRendered){
+      const CELL = 24, GAP = 3;
+      const maxCol = Math.max.apply(null, TILE_GRID.map(function(g){return g.col;}));
+      const maxRow = Math.max.apply(null, TILE_GRID.map(function(g){return g.row;}));
+      const W = (maxCol+1)*CELL + 8, H = (maxRow+1)*CELL + 8;
+      let markup = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">';
+      TILE_GRID.forEach(function(g){
+        const x = g.col*CELL+4, y = g.row*CELL+4, size = CELL-GAP;
+        markup += '<g class="pref-tile" data-code="' + g.code + '">' +
+          '<rect class="tile-base" x="' + x + '" y="' + y + '" width="' + size + '" height="' + size + '" rx="4"/>' +
+          '<text class="tile-label" x="' + (x+size/2) + '" y="' + (y+size/2) + '">' + g.label + '</text>' +
+        '</g>';
+      });
+      markup += '</svg>';
+      $('japanMap').innerHTML = markup;
+      $('japanMap').querySelectorAll('.pref-tile').forEach(function(el){
+        el.addEventListener('click', function(){
+          const code = el.getAttribute('data-code');
+          selectedPrefCode = (selectedPrefCode===code) ? null : code;
+          paintMap();
+          renderMapSide();
+        });
+      });
+      mapRendered = true;
+    }
+    paintMap();
+    renderMapSide();
+  }
+  function paintMap(){
+    const visited = new Set(DATA.visitedPrefCodes || []);
+    $('japanMap').querySelectorAll('.pref-tile').forEach(function(el){
+      const code = el.getAttribute('data-code');
+      const isVisited = visited.has(code);
+      const isSelected = code === selectedPrefCode;
+      const rect = el.querySelector('.tile-base');
+      rect.style.fill = isVisited ? 'var(--shu)' : '#c9c4ae';
+      rect.style.fillOpacity = isVisited ? '1' : '0.55';
+      el.classList.toggle('selected', isSelected);
+      el.querySelector('.tile-label').style.fill = isVisited ? '#faf3e4' : '#2b2622';
+    });
+  }
+  function renderMapSide(){
+    const side = $('mapSide');
+    if(!selectedPrefCode){
+      side.innerHTML = '<div class="map-side-empty">點選地圖上的色塊，查看該地的參拜記錄。</div>';
+      return;
+    }
+    const tile = TILE_GRID.find(function(g){ return g.code===selectedPrefCode; });
+    const list = (DATA.records||[]).filter(function(r){
+      const m = matchPrefectureName(r.location);
+      return m === tile.name;
+    }).sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+
+    side.innerHTML =
+      '<div class="map-side-title">' + tile.name + '</div>' +
+      '<div class="map-side-count">共 ' + list.length + ' 枚御朱印</div>' +
+      '<div class="map-side-list" id="mapSideList"></div>';
+    const listWrap = $('mapSideList');
+    if(list.length===0){
+      listWrap.innerHTML = '<div class="empty-note">尚未在此地留下御朱印記錄</div>';
+      return;
+    }
+    list.forEach(function(r){
+      const photo = r.id ? PHOTO_MAP['rec_'+r.id] : null;
+      const item = document.createElement('div');
+      item.className = 'msi-item' + (photo ? ' has-photo' : '');
+      if(photo) item.setAttribute('data-photo', photo);
+      item.innerHTML =
+        '<div class="msi-thumb">' + (photo ? '<img src="'+photo+'" alt="">' : '<span class="msi-thumb-mark">朱</span>') + '</div>' +
+        '<div>' +
+          '<div class="msi-name">' + escapeHtml(r.name||'（未命名）') + (r.proxyWritten ? '<span class="proxy-tag">代寫</span>' : '') + '</div>' +
+          '<div class="msi-date">' + reiwaLabel(r.date) + '</div>' +
+        '</div>';
+      listWrap.appendChild(item);
+    });
+  }
+
+  function render(data, photoMap){
+    DATA = data;
+    PHOTO_MAP = photoMap || {};
+    $('stateBox').style.display = 'none';
+    $('content').style.display = 'block';
+
+    const bookNames = (data.books||[]).map(function(b){ return b.name; });
+    $('bookFilter').innerHTML = '<option value="all">所有朱印帳</option>' +
+      bookNames.map(function(n){ return '<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+'</option>'; }).join('');
+
+    renderStats();
+    renderBooks();
+    renderRecords();
+  }
+
+  function loadScript(src){
+    return new Promise(function(resolve,reject){
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = function(){ reject(new Error('load failed: ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+
+  async function main(){
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if(!id){
+      $('stateBox').textContent = '這個連結缺少分享 ID，請確認網址是否完整。';
+      return;
+    }
+    if(!firebaseConfig.projectId || firebaseConfig.projectId.indexOf('PASTE_') === 0){
+      $('stateBox').textContent = '這個分享頁面還沒有設定 Firebase，請聯絡連結提供者完成設定。';
+      return;
+    }
+    try{
+      await loadScript('https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js');
+      await loadScript('https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js');
+      const app = firebase.initializeApp(firebaseConfig);
+      const db = app.firestore();
+      const shareRef = db.collection('goshuinShares').doc(id);
+      const doc = await shareRef.get();
+      if(!doc.exists){
+        $('stateBox').textContent = '找不到這個分享內容，連結可能已失效。';
+        return;
+      }
+      const photoMap = {};
+      try{
+        const photosSnap = await shareRef.collection('photos').get();
+        photosSnap.forEach(function(p){ photoMap[p.id] = p.data().photo; });
+      }catch(photoErr){
+        console.error('photos failed to load', photoErr);
+      }
+      render(doc.data(), photoMap);
+    }catch(e){
+      console.error(e);
+      $('stateBox').textContent = '載入失敗，請確認網路連線後重新整理頁面。';
+    }
+  }
+
+  main();
+</script>
+</body>
+</html>
